@@ -4,7 +4,9 @@ Be sure you have minitorch installed in you Virtual Env.
 """
 
 import random
-
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 import minitorch
 
 

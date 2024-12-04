@@ -1,5 +1,8 @@
 from numba import njit
 
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 import minitorch
 import minitorch.fast_ops
 
