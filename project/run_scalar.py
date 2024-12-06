@@ -4,19 +4,24 @@ Be sure you have minitorch installed in you Virtual Env.
 """
 
 import random
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import minitorch
-
 
 class Network(minitorch.Module):
     def __init__(self, hidden_layers):
         super().__init__()
-        raise NotImplementedError("Need to include this file from past assignment.")
+
+        self.layer1 = Linear(2, hidden_layers)
+        self.layer2 = Linear(hidden_layers, hidden_layers)
+        self.layer3 = Linear(hidden_layers, 1)
 
     def forward(self, x):
-        middle = [h.relu() for h in self.layer1.forward(x)]
-        end = [h.relu() for h in self.layer2.forward(middle)]
-        return self.layer3.forward(end)[0].sigmoid()
+        middle = [h.relu() for h in self.layer1.forward(x)]  # type: ignore
+        end = [h.relu() for h in self.layer2.forward(middle)]  # type: ignore
+        return self.layer3.forward(end)[0].sigmoid()  # type: ignore
 
 
 class Linear(minitorch.Module):
@@ -40,8 +45,21 @@ class Linear(minitorch.Module):
             )
 
     def forward(self, inputs):
-        raise NotImplementedError("Need to include this file from past assignment.")
+        out = []
+        for i in range(len(self.weights[0])):
+            dot = 0
+            for j in range(len(self.weights)):
+                dot += inputs[j]*self.weights[j][i].value
+            out.append(dot)
 
+        out = [out[i] + self.bias[i].value for i in range(len(out))]
+        return out
+
+    def __str__(self):
+        weights = [ list(map(lambda x: x .value, self.weights[i])) for i in range(len(self.weights))]
+        bias = list(map(lambda x: x.value, self.bias))
+
+        return str(weights) + ", " + str(bias)
 
 def default_log_fn(epoch, total_loss, correct, losses):
     print("Epoch ", epoch, " loss ", total_loss, "correct", correct)
@@ -61,6 +79,7 @@ class ScalarTrain:
         self.learning_rate = learning_rate
         self.max_epochs = max_epochs
         self.model = Network(self.hidden_layers)
+
         optim = minitorch.SGD(self.model.parameters(), learning_rate)
 
         losses = []
@@ -87,7 +106,6 @@ class ScalarTrain:
                 loss = -prob.log()
                 (loss / data.N).backward()
                 total_loss += loss.data
-
             losses.append(total_loss)
 
             # Update
@@ -97,10 +115,9 @@ class ScalarTrain:
             if epoch % 10 == 0 or epoch == max_epochs:
                 log_fn(epoch, total_loss, correct, losses)
 
-
 if __name__ == "__main__":
     PTS = 50
-    HIDDEN = 2
-    RATE = 0.5
+    HIDDEN = 3
+    RATE = 0.2
     data = minitorch.datasets["Simple"](PTS)
     ScalarTrain(HIDDEN).train(data, RATE)

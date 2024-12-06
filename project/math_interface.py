@@ -4,6 +4,10 @@ import plotly.graph_objects as go
 import streamlit as st
 from interface.streamlit_utils import render_function
 
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
 import minitorch
 from minitorch import MathTest, MathTestVariable
 

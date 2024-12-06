@@ -1,8 +1,11 @@
 from mnist import MNIST
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import minitorch
 
-mndata = MNIST("project/data/")
+mndata = MNIST("data/")
 images, labels = mndata.load_training()
 
 BACKEND = minitorch.TensorBackend(minitorch.FastOps)
@@ -41,8 +44,7 @@ class Conv2d(minitorch.Module):
         self.bias = RParam(out_channels, 1, 1)
 
     def forward(self, input):
-        # TODO: Implement for Task 4.5.
-        raise NotImplementedError("Need to implement for Task 4.5")
+        return minitorch.conv2d(input, self.weights.value) + self.bias.value
 
 
 class Network(minitorch.Module):
@@ -63,16 +65,25 @@ class Network(minitorch.Module):
     def __init__(self):
         super().__init__()
 
-        # For vis
         self.mid = None
         self.out = None
+        self.classes = C
 
-        # TODO: Implement for Task 4.5.
-        raise NotImplementedError("Need to implement for Task 4.5")
+        self.conv1 = Conv2d(1, 4, 3, 3)
+        self.conv2 = Conv2d(4, 8, 3, 3)
+        self.linear1 = Linear(392, 64)
+        self.linear2 = Linear(64, self.classes)
 
     def forward(self, x):
-        # TODO: Implement for Task 4.5.
-        raise NotImplementedError("Need to implement for Task 4.5")
+        self.mid = self.conv1.forward(x).relu()
+        self.out = self.conv2.forward(self.mid).relu()
+        temp = self.linear1.forward(
+            minitorch.avgpool2d(self.out, (4, 4)).view(BATCH, 392)
+        )
+        temp = minitorch.dropout(temp, drop_rate=0.25, ignore=self.eval)
+        temp = self.linear2.forward(temp)
+        out = minitorch.logsoftmax(temp, dim=1)
+        return out
 
 
 def make_mnist(start, stop):

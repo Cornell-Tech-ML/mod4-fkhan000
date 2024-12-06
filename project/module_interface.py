@@ -2,6 +2,10 @@ import networkx as nx
 import streamlit as st
 from streamlit_ace import st_ace
 
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
 import minitorch
 
 MyModule = None

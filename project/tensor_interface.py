@@ -4,6 +4,10 @@ import streamlit as st
 from project.interface.streamlit_utils import render_function
 from show_tensor import tensor_figure
 
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
 from minitorch import SimpleBackend, Tensor, index_to_position, operators, to_index
 from minitorch.tensor_data import TensorData
 
